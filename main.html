@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>55joni55</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  html, body{ margin:0; padding:0; height:100%; overflow:hidden; }
+
+  /* ===== PRELOADER ===== */
+  #preloader{
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.8s ease, visibility 0.8s;
+    cursor: pointer;
+  }
+  #preloader.hidden{
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .preloader-bg{
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #3a3a3e 0%, #1a1a1a 40%, #000000 100%);
+  }
+  .preloader-content{
+    position: relative;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .loader-ring{
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .segment{
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 10;
+    stroke-linecap: round;
+    opacity: 0.12;
+    transition: opacity 0.25s ease, filter 0.25s ease;
+  }
+  .segment.active{
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+  }
+  .tap-text{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    font-family: 'Space Mono', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 6px;
+    opacity: 0;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none;
+    text-shadow: 0 0 15px rgba(255,255,255,0.3);
+    z-index: 2;
+  }
+  .tap-text.show{
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  /* ===== MAIN SITE ===== */
+  #bg-video{
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    object-fit: cover; z-index: -1;
+  }
+  #center-box{
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1200px; height: 550px;
+    background: rgba(27, 27, 27, 0.85);
+    border-radius: 24px;
+  }
+  #header-row{
+    position: absolute; top: 16px; left: 16px;
+    display: flex; align-items: center;
+  }
+  #avatar{
+    width: 100px; height: 100px;
+    object-fit: cover; display: block;
+    position: relative; z-index: 2;
+    border-radius: 50%;
+  }
+  #nick-box{
+    width: 200px; height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    margin-left: -24px; padding-left: 24px;
+    position: relative;
+    border-radius: 8px 20px 20px 8px;
+    background: #074272d0;
+  }
+  #nickname {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px; font-weight: 900;
+    background: linear-gradient(90deg, #0575e6, #00d4ff, #0575e6);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: neonShift 3s linear infinite;
+    text-shadow: 0 0 17px #0575e6,
+                 0 0 34px #0575e680,
+                 0 0 51px #0575e640;
+    filter: drop-shadow(0 0 9px #0575e6);
+    user-select: none;
+  }
+  #nick-box::before{
+    content: ""; position: absolute; inset: 0; padding: 2px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #0575e6, #00d4ff, #0575e6);
+    background-size: 200% auto;
+    animation: neonShift 3s linear infinite;
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  #about-label{
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 520px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #0575e6, #00d4ff, #0575e6);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: neonShift 3s linear infinite;
+    text-shadow: 0 0 10px #0575e680, 0 0 20px #00d4ff80;
+    filter: drop-shadow(0 0 6px #0575e6);
+    user-select: none;
+    z-index: 5;
+}
+
+#about-box{
+    position: absolute;
+    top: 58px;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    width: 520px;
+    height: 420px;
+    background: rgba(27, 27, 27, 0.85);
+    border-radius: 24px;
+    padding: 28px 36px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    scrollbar-width: none;
+}
+  #about-box::-webkit-scrollbar{ display: none; }
+  .about-text{
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    line-height: 1.9;
+    color: #bbb;
+  }
+  .about-text .hi{
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 14px;
+    display: block;
+  }
+  .about-text ul{
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px 0;
+  }
+  .about-text li{
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 8px;
+  }
+  .about-text li::before{
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #fff;
+  }
+  .about-text strong{
+    color: #fff;
+    font-weight: 700;
+  }
+  .about-text .footer{
+    font-style: italic;
+    color: #777;
+    font-size: 12px;
+  }
+
+  .type-line{
+    opacity: 0;
+  }
+
+  #social-label{
+    position: absolute;
+    left: 20px;
+    bottom: 310px;
+    width: 300px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #0575e6, #00d4ff, #0575e6);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: neonShift 3s linear infinite;
+    text-shadow: 0 0 10px #0575e680, 0 0 20px #00d4ff80;
+    filter: drop-shadow(0 0 6px #0575e6);
+    user-select: none;
+    z-index: 5;
+  }
+  @keyframes neonShift{
+    0%   { background-position: 0% center; }
+    100% { background-position: 200% center; }
+  }
+
+  #cards-scroll{
+    position: absolute;
+    left: 20px; bottom: 20px;
+    width: 300px;
+    height: 270px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 8px;
+    scrollbar-width: none;
+  }
+  #cards-scroll::-webkit-scrollbar{ display: none; }
+
+  .card{
+    flex: 0 0 auto;
+    width: 95%;
+    height: 65px;
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    text-decoration: none;
+    background: var(--bg, #1a1a1a);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .card::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    border-radius: inherit;
+    background: var(--border, linear-gradient(90deg, #333, #555));
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .card:hover{
+    transform: translateX(6px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.7);
+  }
+  .card-img{
+    width: 80px;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    flex-shrink: 0;
+  }
+  .card-body{
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+  }
+  .card-title{
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    border: 2px solid var(--border-solid, #fff);
+    border-radius: 6px;
+    padding: 6px 12px;
+    text-align: center;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .card-text{
+    background: var(--text, #fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
+  }
+
+  #music-player{
+    --c-primary: #94a3b8;
+    --c-secondary: #f8fafc;
+    --c-glow: #cbd5e1;
+
+    position: fixed;
+    top: calc(50% + 275px + 16px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 80px;
+    background: rgba(27, 27, 27, 0.85);
+    border: 2px solid #1a1919;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    z-index: 100;
+    transition: --c-primary 0.4s, --c-secondary 0.4s, --c-glow 0.4s;
+  }
+  .player-art{
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow: hidden;
+  }
+  .player-art img{
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .player-main{
+    flex: 1;
+    align-self: stretch;
+    min-width: 0;
+    position: relative;
+  }
+  .track-name{
+    position: absolute;
+    top: 5px;
+    left: 0; right: 0;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-primary));
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: neonShift 3s linear infinite;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    filter: drop-shadow(0 0 4px var(--c-glow));
+  }
+  .progress-row{
+    position: absolute;
+    top: 45%;
+    left: 0; right: 0;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .time{
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--c-secondary);
+    text-shadow: 0 0 6px var(--c-glow);
+    width: 36px;
+    text-align: center;
+  }
+  .progress-bar{
+    flex: 1;
+    height: 4px;
+    background: #555;
+    border-radius: 2px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill{
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--c-primary), var(--c-secondary));
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--c-glow);
+    transition: width 0.1s linear;
+  }
+  .controls{
+    position: absolute;
+    bottom: 5px;
+    left: 0; right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+  }
+  .ctrl-btn{
+    background: transparent;
+    border: none;
+    color: #aaa;
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 8px 10px;
+    transition: all 0.2s;
+    line-height: 1;
+    text-shadow: 0 0 4px transparent;
+  }
+  .ctrl-btn:hover{
+    color: var(--c-secondary);
+    text-shadow: 0 0 10px var(--c-glow);
+    transform: scale(1.15);
+  }
+  .ctrl-btn.play{
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #fff;
+    background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
+    box-shadow: 0 0 14px var(--c-glow);
+  }
+  .ctrl-btn.play:hover{
+    box-shadow: 0 0 22px var(--c-glow);
+    transform: scale(1.1);
+  }
+
+  /* ===== RIGHT PANEL with PHOTOS ===== */
+  #right-panel{
+    position: absolute;
+    top: 25px;
+    right: 40px;
+    width: 260px;
+    bottom: 20px;
+    background: rgba(27, 27, 27, 0.85);
+    border-radius: 0;
+    z-index: 2;
+    padding: 5px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  .photo-grid{
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100%;
+    height: 100%;
+  }
+  .photo-large{
+    flex: 1;
+    width: 100%;
+    border: 1px solid #333;
+    overflow: hidden;
+  }
+  .photo-large img,
+  .photo-small img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .photo-large img:hover,
+  .photo-small img:hover{
+    transform: scale(1.03);
+  }
+  .photo-row{
+    display: flex;
+    gap: 5px;
+    height: 85px;
+    flex-shrink: 0;
+  }
+  .photo-small{
+    flex: 1;
+    border: 1px solid #333;
+    overflow: hidden;
+  }
+
+  /* ===== LIGHTBOX ===== */
+  #lightbox{
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  #lightbox.active{
+    opacity: 1;
+    visibility: visible;
+  }
+  .lightbox-bg{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+  }
+  .lightbox-wrap{
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .lightbox-center{
+    position: relative;
+    max-width: 55vw;
+    max-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #lightbox-img{
+    max-width: 55vw;
+    max-height: 75vh;
+    object-fit: contain;
+    display: block;
+    border-radius: 0;
+  }
+  #lightbox-cube{
+    position: absolute;
+    right: calc(100% + 40px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(12, 12, 12, 0.96);
+    border-radius: 10px;
+    width: 200px;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid #1a1a1a;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    pointer-events: none;
+    padding: 12px;
+    box-sizing: border-box;
+  }
+  #lightbox-cube span{
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    background: linear-gradient(90deg, #0575e6, #00d4ff, #0575e6);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: neonShift 3s linear infinite;
+    filter: drop-shadow(0 0 6px #0575e6);
+  }
+
+  /* ===== LIGHTBOX CLOSE BUTTON ===== */
+  #lightbox-close{
+    position: fixed;
+    top: 30px;
+    right: 40px;
+    z-index: 10;
+    background: rgba(12, 12, 12, 0.9);
+    border: 2px solid #0575e6;
+    color: #00d4ff;
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    padding-bottom: 4px;
+    transition: all 0.2s ease;
+    text-shadow: 0 0 8px #0575e6;
+    box-shadow: 0 0 14px rgba(5,117,230,0.25);
+  }
+  #lightbox-close:hover{
+    background: rgba(5,117,230,0.15);
+    box-shadow: 0 0 24px rgba(5,117,230,0.5);
+    transform: scale(1.1);
+    color: #fff;
+  }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 768px) {
+    html, body {
+      overflow: auto;
+      height: auto;
+    }
+    
+    #center-box {
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: none;
+      width: 95%;
+      max-width: 500px;
+      height: auto;
+      min-height: auto;
+      margin: 15px auto 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 15px;
+      border-radius: 20px;
+    }
+    
+    #header-row {
+      position: relative;
+      top: auto;
+      left: auto;
+      order: 1;
+      margin: 10px 0;
+    }
+    
+    #about-label {
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: none;
+      width: auto;
+      order: 2;
+      margin: 0;
+    }
+    
+    #about-box {
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: none;
+      right: auto;
+      width: 90%;
+      height: auto;
+      order: 3;
+      margin: 0;
+    }
+    
+    #social-label {
+      position: relative;
+      left: auto;
+      bottom: auto;
+      width: auto;
+      order: 4;
+      margin: 10px 0 0;
+    }
+    
+    #cards-scroll {
+      position: relative;
+      left: auto;
+      bottom: auto;
+      width: 90%;
+      height: 260px;
+      max-height: none;
+      order: 5;
+      margin: 0;
+      padding: 8px;
+      gap: 10px;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    .card {
+      width: 100%;
+      height: 60px;
+    }
+    
+    #right-panel {
+      position: relative;
+      top: auto;
+      right: auto;
+      width: 90%;
+      height: 380px;
+      bottom: auto;
+      order: 6;
+      margin: 0 0 10px 0;
+    }
+    
+    #music-player {
+      position: fixed;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      transform: none;
+      width: 100%;
+      border-radius: 16px 16px 0 0;
+      z-index: 1000;
+      margin: 0;
+      height: 75px;
+      box-sizing: border-box;
+      padding: 0 14px;
+      gap: 10px;
+    }
+    
+    .player-art{
+      width: 48px;
+      height: 48px;
+    }
+    
+    .track-name{
+      font-size: 12px;
+    }
+    
+    .time{
+      width: 32px;
+      font-size: 9px;
+    }
+
+    .lightbox-center {
+      flex-direction: column;
+      max-width: 90vw;
+    }
+    
+    #lightbox-img {
+      max-width: 85vw;
+      max-height: 50vh;
+      order: 1;
+    }
+    
+    #lightbox-cube {
+      position: relative;
+      right: auto;
+      top: auto;
+      transform: none;
+      margin-top: 20px;
+      margin-bottom: 0;
+      width: 180px;
+      height: auto;
+      min-height: 100px;
+      order: 2;
+    }
+    
+    #lightbox-close {
+      top: 15px;
+      right: 15px;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== PRELOADER ===== -->
+<div id="preloader">
+  <div class="preloader-bg"></div>
+  <div class="preloader-content">
+    <svg class="loader-ring" viewBox="0 0 200 200" id="loaderSvg"></svg>
+    <div class="tap-text" id="tapText">TAP</div>
+  </div>
+</div>
+
+<!-- ===== LIGHTBOX ===== -->
+<div id="lightbox">
+  <div class="lightbox-bg"></div>
+  <button id="lightbox-close">&times;</button>
+  <div class="lightbox-wrap">
+    <div class="lightbox-center">
+      <div id="lightbox-cube"><span id="lightbox-text">what did u need to find here?</span></div>
+      <img id="lightbox-img" src="" alt="">
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN SITE ===== -->
+<video id="bg-video" autoplay muted loop playsinline>
+  <source src="file/background.mp4" type="video/mp4">
+</video>
+
+<audio id="audio" preload="metadata"></audio>
+
+<div id="center-box">
+  <div id="right-panel">
+    <div class="photo-grid">
+      <div class="photo-large">
+        <img src="file/pictures/picture1.png" alt="" data-caption="what did u need to find here?">
+      </div>
+      <div class="photo-row">
+        <div class="photo-small"><img src="file/pictures/picture2.png" alt="" data-caption="what did u need to find here?"></div>
+        <div class="photo-small"><img src="file/pictures/picture3.png" alt="" data-caption="what did u need to find here?"></div>
+        <div class="photo-small"><img src="file/pictures/picture4.png" alt="" data-caption="what did u need to find here?"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="header-row">
+    <img id="avatar" src="file/base.jpg" alt="">
+    <div id="nick-box">
+      <span id="nickname">55joni55</span>
+    </div>
+  </div>
+
+  <div id="about-box">
+    <div class="about-text" id="aboutText">
+      <div class="type-line hi">Hi, I'm <strong>Joni</strong>.</div>
+      <ul>
+        <li class="type-line">Beginner <strong>Software Developer</strong></li>
+        <li class="type-line">Speak <strong>English & Russian</strong></li>
+        <li class="type-line">Born on <strong>March 14</strong></li>
+        <li class="type-line">Passionate about technology and self-improvement</li>
+        <li class="type-line">Enjoy <strong>music</strong> and <strong>gaming</strong></li>
+        <li class="type-line">Love exploring new places</li>
+        <li class="type-line">Enjoy games across different genres</li>
+        <li class="type-line">Love <strong>rainy weather</strong> 🌧️</li>
+      </ul>
+      <div class="type-line footer">Always doing something</div>
+    </div>
+  </div>
+
+  <div id="about-label">About me</div>
+
+  <div id="social-label">Social Media</div>
+
+  <div id="cards-scroll">
+    <a class="card" href="https://www.donationalerts.com/c/55joni55" target="_blank"
+       style="--bg: linear-gradient(135deg, #1a0f00, #2a1500); --border: linear-gradient(90deg, #ff8800, #ffaa00); --border-solid: #ff8800; --text: linear-gradient(90deg, #ffaa00, #ffcc00);">
+      <img class="card-img" src="file/social-media/donation.jpg" alt="DonationAlerts">
+      <div class="card-body"><div class="card-title"><span class="card-text">DONATE</span></div></div>
+    </a>
+    <a class="card" href="https://t.me/G5_55_5G" target="_blank"
+       style="--bg: linear-gradient(135deg, #0a1a2f, #0d2340); --border: linear-gradient(90deg, #0088cc, #00aaff); --border-solid: #0088cc; --text: linear-gradient(90deg, #00aaff, #66ccff);">
+      <img class="card-img" src="file/social-media/telegram.png" alt="Telegram">
+      <div class="card-body"><div class="card-title"><span class="card-text">TELEGRAM</span></div></div>
+    </a>
+    <a class="card" href="https://discord.com/users/786470784172163083" target="_blank"
+       style="--bg: linear-gradient(135deg, #0f0f1f, #1a1a3e); --border: linear-gradient(90deg, #5865f2, #7289da); --border-solid: #5865f2; --text: linear-gradient(90deg, #7289da, #99aaff);">
+      <img class="card-img" src="file/social-media/discord.png" alt="Discord">
+      <div class="card-body"><div class="card-title"><span class="card-text">DISCORD</span></div></div>
+    </a>
+    <a class="card" href="https://tiktok.com/@55joni55" target="_blank"
+       style="--bg: linear-gradient(135deg, #161515, #000000); --border: linear-gradient(90deg, #000000, #050505); --border-solid: #ffffff; --text: #ffffff;">
+      <img class="card-img" src="file/social-media/tiktok.png" alt="TikTok">
+      <div class="card-body"><div class="card-title"><span class="card-text">TIKTOK</span></div></div>
+    </a>
+    <a class="card" href="https://youtube.com/@55joni55" target="_blank"
+       style="--bg: linear-gradient(135deg, #1a0505, #2a0000); --border: linear-gradient(90deg, #ff0000, #ff4444); --border-solid: #ff0000; --text: linear-gradient(90deg, #ff4444, #ff8888);">
+      <img class="card-img" src="file/social-media/youtube.jpg" alt="YouTube">
+      <div class="card-body"><div class="card-title"><span class="card-text">YOUTUBE</span></div></div>
+    </a>
+    <a class="card" href="https://github.com/55joni55" target="_blank"
+       style="--bg: linear-gradient(135deg, #0a0a0a, #1a1a1a); --border: linear-gradient(90deg, #ffffff, #888888); --border-solid: #ffffff; --text: linear-gradient(90deg, #cccccc, #ffffff);">
+      <img class="card-img" src="file/social-media/github.png" alt="GitHub">
+      <div class="card-body"><div class="card-title"><span class="card-text">GITHUB</span></div></div>
+    </a>
+    <a class="card" href="https://instagram.com/55joni55" target="_blank"
+       style="--bg: linear-gradient(135deg, #1f0a1a, #2a1010); --border: linear-gradient(90deg, #e1306c, #f77737); --border-solid: #e1306c; --text: linear-gradient(90deg, #f77737, #e1306c);">
+      <img class="card-img" src="file/social-media/instagram.png" alt="Instagram">
+      <div class="card-body"><div class="card-title"><span class="card-text">INSTAGRAM</span></div></div>
+    </a>
+    <a class="card" href="https://open.spotify.com/user/55joni55" target="_blank"
+       style="--bg: linear-gradient(135deg, #0f1f15, #0a2a10); --border: linear-gradient(90deg, #1db954, #1ed760); --border-solid: #1db954; --text: linear-gradient(90deg, #1ed760, #66ff88);">
+      <img class="card-img" src="file/social-media/spotify.jpg" alt="Spotify">
+      <div class="card-body"><div class="card-title"><span class="card-text">SPOTIFY</span></div></div>
+    </a>
+  </div>
+</div>
+
+<div id="music-player">
+  <div class="player-art" id="playerArt">
+    <img src="file/music/music1ph.jpg" alt="" id="artImg">
+  </div>
+  <div class="player-main">
+    <div class="track-name" id="trackName">Loading...</div>
+    <div class="progress-row">
+      <span class="time" id="curTime">0:00</span>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="time" id="durTime">0:00</span>
+    </div>
+    <div class="controls">
+      <button class="ctrl-btn" onclick="prevTrack()">‹</button>
+      <button class="ctrl-btn play" onclick="togglePlay()" id="playBtn">▶</button>
+      <button class="ctrl-btn" onclick="nextTrack()">›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== PRELOADER ===== */
+const preloader = document.getElementById('preloader');
+const tapText = document.getElementById('tapText');
+const loaderSvg = document.getElementById('loaderSvg');
+const totalSegments = 10;
+const radius = 70;
+const center = 100;
+const segAngle = 360 / totalSegments;
+const gap = 4;
+
+for(let i = 0; i < totalSegments; i++){
+  const startDeg = i * segAngle;
+  const endDeg = startDeg + segAngle - gap;
+  const startRad = (startDeg - 90) * Math.PI / 180;
+  const endRad = (endDeg - 90) * Math.PI / 180;
+  const x1 = center + radius * Math.cos(startRad);
+  const y1 = center + radius * Math.sin(startRad);
+  const x2 = center + radius * Math.cos(endRad);
+  const y2 = center + radius * Math.sin(endRad);
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', `M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`);
+  path.setAttribute('class', 'segment');
+  path.setAttribute('id', `seg-${i}`);
+  loaderSvg.appendChild(path);
+}
+
+let loadProgress = 0;
+let pageLoaded = false;
+
+function updateLoader(pct){
+  loadProgress = Math.min(pct, 100);
+  const activeCount = Math.floor(loadProgress / 10);
+  for(let i = 0; i < totalSegments; i++){
+    const seg = document.getElementById(`seg-${i}`);
+    if(i < activeCount) seg.classList.add('active');
+    else seg.classList.remove('active');
+  }
+  if(loadProgress >= 100 && pageLoaded) tapText.classList.add('show');
+}
+
+const loadInterval = setInterval(() => {
+  if(loadProgress < 90){
+    loadProgress += Math.random() * 2.5;
+    updateLoader(loadProgress);
+  }
+}, 40);
+
+window.addEventListener('load', () => {
+  pageLoaded = true;
+  clearInterval(loadInterval);
+  let finish = loadProgress;
+  const finishInt = setInterval(() => {
+    finish += 3;
+    updateLoader(finish);
+    if(finish >= 100){
+      clearInterval(finishInt);
+      updateLoader(100);
+    }
+  }, 20);
+});
+
+preloader.addEventListener('click', () => {
+  if(loadProgress >= 100 && pageLoaded){
+    preloader.classList.add('hidden');
+    setTimeout(() => { startPlayback(); }, 300);
+    setTimeout(() => { typeWriterLines(); }, 600);
+  }
+});
+
+/* ===== TYPEWRITER for About ===== */
+function typeWriterLines(){
+  const lines = document.querySelectorAll('#aboutText .type-line');
+  
+  lines.forEach((el, index) => {
+    const fullHtml = el.innerHTML;
+    const temp = document.createElement('div');
+    temp.innerHTML = fullHtml;
+    const txt = temp.textContent || temp.innerText || '';
+
+    el.innerHTML = '';
+    el.style.opacity = '1';
+
+    let i = 0;
+
+    setTimeout(() => {
+      const timer = setInterval(() => {
+        if(i < txt.length){
+          el.textContent += txt.charAt(i);
+          i++;
+        } else {
+          clearInterval(timer);
+          el.innerHTML = fullHtml;
+        }
+      }, 30);
+    }, index * 350);
+  });
+}
+
+/* ===== Title typing ===== */
+const prefix = "@";
+const titleText = "55joni55";
+const speed = 150, deleteSpeed = 80, pause = 1000;
+let ti = 0, tDeleting = false;
+function typeTitle(){
+  if(!tDeleting){
+    document.title = prefix + titleText.substring(0, ti + 1);
+    ti++;
+    if(ti === titleText.length){ tDeleting = true; setTimeout(typeTitle, pause); return; }
+    setTimeout(typeTitle, speed);
+  } else {
+    document.title = prefix + titleText.substring(0, ti - 1);
+    ti--;
+    if(ti === 0) tDeleting = false;
+    setTimeout(typeTitle, deleteSpeed);
+  }
+}
+typeTitle();
+
+/* ===== LIGHTBOX ===== */
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxText = document.getElementById('lightbox-text');
+const lightboxBg = document.querySelector('.lightbox-bg');
+const lightboxClose = document.getElementById('lightbox-close');
+
+document.querySelectorAll('.photo-large img, .photo-small img').forEach(img => {
+  img.addEventListener('click', () => {
+    lightboxImg.src = img.src;
+    lightboxText.textContent = img.dataset.caption || 'what did u need to find here?';
+    lightbox.classList.add('active');
+  });
+});
+
+function closeLightbox(){
+  lightbox.classList.remove('active');
+}
+
+lightboxBg.addEventListener('click', closeLightbox);
+lightboxClose.addEventListener('click', closeLightbox);
+
+/* ===== Playlist ===== */
+const playlist = [
+  {
+    src: 'file/music/music1.mp3',
+    title: 'The American Dawn - Her',
+    art: 'file/music/music1ph.jpg',
+    colors: { primary: '#94a3b8', secondary: '#f8fafc', glow: '#cbd5e1' }
+  },
+  {
+    src: 'file/music/music2.mp3',
+    title: 'jacal - resonance',
+    art: 'file/music/music2ph.jpg',
+    colors: { primary: '#ff006e', secondary: '#00f5ff', glow: '#ff00aa' }
+  },
+  {
+    src: 'file/music/music3.mp3',
+    title: 'Roi - Instrumental',
+    art: 'file/music/music3ph.jpg',
+    colors: { primary: '#3f37c9', secondary: '#4895ef', glow: '#4cc9f0' }
+  }
+];
+
+let current = 0;
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const progressFill = document.getElementById('progressFill');
+const progressBar = document.getElementById('progressBar');
+const curTimeEl = document.getElementById('curTime');
+const durTimeEl = document.getElementById('durTime');
+const trackName = document.getElementById('trackName');
+const artImg = document.getElementById('artImg');
+const player = document.getElementById('music-player');
+
+function loadTrack(idx){
+  current = idx;
+  const t = playlist[current];
+  audio.src = t.src;
+  trackName.textContent = t.title;
+  artImg.src = t.art;
+  player.style.setProperty('--c-primary', t.colors.primary);
+  player.style.setProperty('--c-secondary', t.colors.secondary);
+  player.style.setProperty('--c-glow', t.colors.glow);
+  progressFill.style.width = '0%';
+  curTimeEl.textContent = '0:00';
+  durTimeEl.textContent = '0:00';
+}
+
+function formatTime(sec){
+  if(isNaN(sec)) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function togglePlay(){
+  if(audio.paused){
+    if(!audio.src) loadTrack(0);
+    audio.play();
+    playBtn.innerHTML = '❚❚';
+  } else {
+    audio.pause();
+    playBtn.innerHTML = '▶';
+  }
+}
+
+function nextTrack(){
+  loadTrack((current + 1) % playlist.length);
+  audio.play();
+  playBtn.innerHTML = '❚❚';
+}
+
+function prevTrack(){
+  loadTrack((current - 1 + playlist.length) % playlist.length);
+  audio.play();
+  playBtn.innerHTML = '❚❚';
+}
+
+audio.addEventListener('timeupdate', () => {
+  if(audio.duration){
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = pct + '%';
+  }
+  curTimeEl.textContent = formatTime(audio.currentTime);
+});
+
+audio.addEventListener('loadedmetadata', () => {
+  durTimeEl.textContent = formatTime(audio.duration);
+});
+
+audio.addEventListener('ended', () => {
+  nextTrack();
+});
+
+progressBar.addEventListener('click', (e) => {
+  const rect = progressBar.getBoundingClientRect();
+  const clickX = e.clientX - rect.left;
+  const pct = clickX / rect.width;
+  if(audio.duration) audio.currentTime = pct * audio.duration;
+});
+
+function startPlayback(){
+  loadTrack(0);
+  audio.play().then(() => { playBtn.innerHTML = '❚❚'; })
+    .catch(() => { playBtn.innerHTML = '▶'; });
+}
+</script>
+
+</body>
+</html>
